@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Burguer Zone · Menú y Pedidos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="site-header">
+  <div class="grill-line"></div>
+  <h1 class="logo">BURGUER<br>ZONE</h1>
+  <p class="tagline">hamburguesas &amp; hot dogs de la buena</p>
+  <div class="hours-pill">
+    <span class="dot"></span> Lun – Dom · 6:00 p.m. a 11:30 p.m.
+  </div>
+</header>
+
+<!-- ================= NAV DE CATEGORÍAS ================= -->
+<nav class="cat-nav" id="catNav">
+  <button class="cat-btn active" data-target="hamburguesas">Hamburguesas</button>
+  <button class="cat-btn" data-target="hotdogs">Hot Dogs</button>
+  <button class="cat-btn" data-target="bebidas">Bebidas</button>
+</nav>
+
+<!-- ================= MENÚ ================= -->
+<main class="menu">
+
+  <section class="category" id="hamburguesas">
+    <h2 class="cat-title">Hamburguesas</h2>
+    <div class="item-list" id="list-hamburguesas"></div>
+  </section>
+
+  <section class="category" id="hotdogs">
+    <h2 class="cat-title">Hot Dogs</h2>
+    <div class="item-list" id="list-hotdogs"></div>
+  </section>
+
+  <section class="category" id="bebidas">
+    <h2 class="cat-title">Bebidas</h2>
+    <div class="item-list" id="list-bebidas"></div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <p><strong>Ubicación</strong><br>Blv. Jardines Del Grijalva #7502<br>Frente a la ferretería "El Patrón"</p>
+  <p><strong>Teléfonos</strong><br>56 1338 5501 · 96 1532 7258</p>
+</footer>
+
+<!-- ================= BOTÓN FLOTANTE DE PEDIDO ================= -->
+<button class="ticket-fab" id="ticketFab">
+  <span class="fab-icon">🧾</span>
+  <span class="fab-text">Ver pedido</span>
+  <span class="fab-count" id="fabCount">0</span>
+</button>
+
+<!-- ================= PANEL / TICKET DE PEDIDO ================= -->
+<div class="overlay" id="overlay"></div>
+
+<aside class="order-ticket" id="orderTicket">
+  <div class="ticket-head">
+    <div class="ticket-punch"></div>
+    <h3>TU PEDIDO</h3>
+    <button class="close-btn" id="closeTicket">✕</button>
+  </div>
+
+  <div class="ticket-body" id="ticketBody">
+    <p class="empty-msg" id="emptyMsg">Aún no has agregado nada.<br>Elige algo rico del menú 👀</p>
+  </div>
+
+  <div class="ticket-total-row">
+    <span>TOTAL</span>
+    <span id="ticketTotal">$0</span>
+  </div>
+
+  <button class="btn-primary" id="goCheckout" disabled>Continuar con el pedido</button>
+</aside>
+
+<!-- ================= MODAL DE CHECKOUT (PASOS) ================= -->
+<div class="overlay" id="checkoutOverlay"></div>
+
+<div class="checkout-modal" id="checkoutModal">
+  <div class="checkout-head">
+    <button class="back-btn" id="backStep">‹</button>
+    <div class="steps" id="stepsIndicator">
+      <span class="step active" data-step="1"></span>
+      <span class="step" data-step="2"></span>
+      <span class="step" data-step="3"></span>
+      <span class="step" data-step="4"></span>
+    </div>
+    <button class="close-btn" id="closeCheckout">✕</button>
+  </div>
+
+  <!-- Paso 1: Entrega -->
+  <div class="step-panel active" data-step-panel="1">
+    <h3>¿Cómo lo quieres?</h3>
+    <div class="choice-grid">
+      <button class="choice-card" data-delivery="pickup">
+        <span class="choice-emoji">🏠</span>
+        <span class="choice-title">Recoger en el local</span>
+        <span class="choice-sub">Blv. Jardines Del Grijalva #7502</span>
+      </button>
+      <button class="choice-card" data-delivery="domicilio">
+        <span class="choice-emoji">🛵</span>
+        <span class="choice-title">Envío a domicilio</span>
+        <span class="choice-sub">Te lo llevamos a tu puerta</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Paso 2: Dirección (solo si domicilio) -->
+  <div class="step-panel" data-step-panel="2">
+    <h3 id="step2Title">Datos de entrega</h3>
+    <label class="field">
+      <span>Nombre de quien recibe</span>
+      <input type="text" id="custName" placeholder="Ej. Juan Pérez">
+    </label>
+    <label class="field" id="addressField">
+      <span>Dirección completa</span>
+      <textarea id="custAddress" placeholder="Calle, número, colonia, referencias..."></textarea>
+    </label>
+    <label class="field">
+      <span>Teléfono de contacto</span>
+      <input type="tel" id="custPhone" placeholder="Ej. 9611234567">
+    </label>
+    <label class="field">
+      <span>Comentarios (opcional)</span>
+      <textarea id="custComments" placeholder="Ej. Sin cebolla en la hamburguesa Clásica, extra queso en el hot dog, o algún comentario sobre el servicio..."></textarea>
+    </label>
+    <button class="btn-primary" id="toStep3">Siguiente</button>
+  </div>
+
+  <!-- Paso 3: Pago -->
+  <div class="step-panel" data-step-panel="3">
+    <h3>¿Cómo vas a pagar?</h3>
+    <div class="choice-grid">
+      <button class="choice-card" data-payment="efectivo">
+        <span class="choice-emoji">💵</span>
+        <span class="choice-title">Efectivo</span>
+        <span class="choice-sub">Pagas al recibir / recoger</span>
+      </button>
+      <button class="choice-card" data-payment="transferencia">
+        <span class="choice-emoji">💳</span>
+        <span class="choice-title">Transferencia</span>
+        <span class="choice-sub">Te compartimos los datos por WhatsApp</span>
+      </button>
+    </div>
+    <label class="field">
+      <span>¿Necesitas cambio de algún billete? (opcional)</span>
+      <input type="text" id="custChange" placeholder="Ej. Pago con $200">
+    </label>
+    <button class="btn-primary" id="toStep4">Siguiente</button>
+  </div>
+
+  <!-- Paso 4: Confirmación -->
+  <div class="step-panel" data-step-panel="4">
+    <h3>Revisa tu pedido</h3>
+    <div class="summary-ticket" id="summaryTicket"></div>
+    <button class="btn-whatsapp" id="sendWhatsapp">
+      <span>Enviar pedido por WhatsApp</span>
+    </button>
+    <p class="fine-print">Al enviar, se abrirá WhatsApp con tu pedido ya escrito. Solo confirma el envío.</p>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
