@@ -160,8 +160,8 @@
         <span class="choice-sub">Te compartimos los datos por WhatsApp</span>
       </button>
     </div>
-    <label class="field">
-      <span>¿Necesitas cambio de algún billete? (opcional)</span>
+    <label class="field" id="changeField" style="display:none;">
+      <span>¿Con cuánto vas a pagar? (para tu cambio)</span>
       <input type="text" id="custChange" placeholder="Ej. Pago con $200">
     </label>
     <button class="btn-primary" id="toStep4">Siguiente</button>
@@ -173,8 +173,10 @@
     <div class="summary-ticket" id="summaryTicket"></div>
 
     <div class="terms-box">
-      <p class="terms-title">Restricciones que aplican a todos los pedidos:</p>
-      <ul class="terms-list">
+      <button type="button" class="terms-toggle" id="termsToggle">
+        Ver restricciones del pedido <span class="chevron">▾</span>
+      </button>
+      <ul class="terms-list" id="termsList" hidden>
         <li>Los precios y costos de envío pueden variar sin previo aviso.</li>
         <li>El tiempo de entrega es aproximado y puede cambiar según la demanda.</li>
         <li>Verifica que tu dirección y teléfono sean correctos; no nos hacemos responsables por datos erróneos.</li>
@@ -183,7 +185,7 @@
       </ul>
       <label class="checkbox-field">
         <input type="checkbox" id="acceptTerms">
-        <span>He leído y acepto las restricciones del pedido</span>
+        <span>Acepto las restricciones del pedido</span>
       </label>
     </div>
 

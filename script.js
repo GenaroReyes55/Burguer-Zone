@@ -4,7 +4,7 @@
    Formato: código de país + número, SIN espacios ni signos.
    Ejemplo México: 52 + 9611234567 = 529611234567
    ========================================================= */
-const WHATSAPP_NUMBER = "529615327258";
+const WHATSAPP_NUMBER = "5215613385501";
 
 /* =========================================================
    MENÚ — edita nombres, descripciones y precios aquí
@@ -332,6 +332,8 @@ document.querySelectorAll("[data-payment]").forEach(btn => {
     document.querySelectorAll("[data-payment]").forEach(b => b.classList.remove("selected"));
     btn.classList.add("selected");
     order.payment = btn.dataset.payment;
+    document.getElementById("changeField").style.display =
+      order.payment === "efectivo" ? "flex" : "none";
   });
 });
 document.getElementById("toStep4").addEventListener("click", () => {
@@ -340,6 +342,10 @@ document.getElementById("toStep4").addEventListener("click", () => {
     return;
   }
   order.change = document.getElementById("custChange").value.trim();
+  if (order.payment === "efectivo" && !order.change) {
+    alert("Por favor indica con cuánto vas a pagar, para llevar tu cambio.");
+    return;
+  }
   goToStep(4);
 });
 
@@ -386,6 +392,18 @@ function buildSummary() {
   document.getElementById("summaryTicket").textContent = text;
 }
 
+document.getElementById("termsToggle").addEventListener("click", (e) => {
+  const list = document.getElementById("termsList");
+  const isHidden = list.hasAttribute("hidden");
+  if (isHidden) {
+    list.removeAttribute("hidden");
+    e.currentTarget.classList.add("open");
+  } else {
+    list.setAttribute("hidden", "");
+    e.currentTarget.classList.remove("open");
+  }
+});
+
 document.getElementById("acceptTerms").addEventListener("change", (e) => {
   document.getElementById("sendWhatsapp").disabled = !e.target.checked;
 });
@@ -395,7 +413,7 @@ document.getElementById("sendWhatsapp").addEventListener("click", () => {
   const deliveryText = order.delivery === "domicilio" ? "Envío a domicilio" : "Recoger en el local";
   const paymentText = order.payment === "efectivo" ? "Efectivo" : "Transferencia";
 
-  let msg = `¡Hola Burguer Zone! 👋 Quiero hacer este pedido:\n\n`;
+  let msg = `¡Hola Burguer Zone! 🍔 Quiero hacer este pedido:\n\n`;
   msg += lines.join("\n") + "\n\n";
   msg += `Subtotal: $${cartTotal()}\n`;
   if (order.delivery === "domicilio" && order.zone) {
