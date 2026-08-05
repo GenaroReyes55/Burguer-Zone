@@ -1,13 +1,10 @@
 /* =========================================================
    CONFIGURACIÓN DEL RESTAURANTE
-   Cambia aquí el número de WhatsApp donde llegarán los pedidos.
-   Formato: código de país + número, SIN espacios ni signos.
-   Ejemplo México: 52 + 9611234567 = 529611234567
    ========================================================= */
 const WHATSAPP_NUMBER = "5215613385501";
 
 /* =========================================================
-   MENÚ — edita nombres, descripciones y precios aquí
+   MENÚ
    ========================================================= */
 const MENU = {
   hamburguesas: [
@@ -24,19 +21,20 @@ const MENU = {
   bebidas: [
     { id: "b1", name: "Refresco", label: "Bebida", desc: "Lata / botella fría.", price: 30 },
     { id: "b2", name: "Agua de sabor", label: "Bebida", desc: "Preparada del día.", price: 25 },
-  ],
+  ]
 };
 
 const CATEGORY_LABELS = { hamburguesas: "list-hamburguesas", hotdogs: "list-hotdogs", bebidas: "list-bebidas" };
 
 /* =========================================================
-   ZONAS DE ENVÍO — edita nombres y costos aquí
+   ZONAS DE ENVÍO
    ========================================================= */
 const ZONES = [
   { id: "puerta", name: "A la puerta", cost: 25 },
   { id: "jardines", name: "Jardines", cost: 15 },
   { id: "arboledas", name: "Arboledas", cost: 15 },
   { id: "victoria", name: "Fraccionamiento La Victoria", cost: 50 },
+  { id: "otra", name: "Otra zona", cost: null }
 ];
 
 /* =========================================================
@@ -86,13 +84,12 @@ function renderItemControl(id) {
   const holder = document.querySelector(`[data-add="${id}"]`);
   if (!holder) return;
   const qty = cart[id] || 0;
-
   if (qty === 0) {
     holder.innerHTML = `<button class="qty-add-btn" data-inc="${id}">+</button>`;
   } else {
     holder.innerHTML = `
       <div class="qty-control">
-        <button data-dec="${id}">−</button>
+        <button data-dec="${id}">-</button>
         <span>${qty}</span>
         <button data-inc="${id}">+</button>
       </div>`;
@@ -102,11 +99,13 @@ function renderItemControl(id) {
 document.addEventListener("click", (e) => {
   const incId = e.target.getAttribute("data-inc");
   const decId = e.target.getAttribute("data-dec");
+  
   if (incId) {
     cart[incId] = (cart[incId] || 0) + 1;
     renderItemControl(incId);
     renderTicket();
   }
+  
   if (decId) {
     cart[decId] = Math.max(0, (cart[decId] || 0) - 1);
     if (cart[decId] === 0) delete cart[decId];
@@ -129,7 +128,7 @@ catButtons.forEach(btn => {
 });
 
 /* =========================================================
-   BLOQUEO DE SCROLL DE FONDO (evita saltos raros en móvil)
+   BLOQUEO DE SCROLL DE FONDO
    ========================================================= */
 let savedScrollY = 0;
 let scrollLockCount = 0;
@@ -170,15 +169,15 @@ function renderTicket() {
   fabCount.textContent = count;
   ticketTotal.textContent = `$${cartTotal()}`;
   goCheckout.disabled = count === 0;
-
+  
   ticketBody.querySelectorAll(".ticket-item").forEach(el => el.remove());
-
+  
   if (count === 0) {
     emptyMsg.style.display = "block";
     return;
   }
+  
   emptyMsg.style.display = "none";
-
   Object.entries(cart).forEach(([id, qty]) => {
     const item = findItem(id);
     const row = document.createElement("div");
@@ -188,7 +187,7 @@ function renderTicket() {
       <span class="ti-price">$${item.price * qty}</span>
       <div class="ti-controls">
         <div class="qty-control">
-          <button data-dec="${id}">−</button>
+          <button data-dec="${id}">-</button>
           <span>${qty}</span>
           <button data-inc="${id}">+</button>
         </div>
@@ -204,6 +203,7 @@ function openTicket() {
   overlay.classList.add("show");
   lockScroll();
 }
+
 function closeTicketPanel() {
   if (orderTicket.classList.contains("open")) {
     orderTicket.classList.remove("open");
@@ -217,7 +217,7 @@ closeTicket.addEventListener("click", closeTicketPanel);
 overlay.addEventListener("click", closeTicketPanel);
 
 /* =========================================================
-   CHECKOUT — PASOS
+   CHECKOUT - PASOS
    ========================================================= */
 const checkoutModal = document.getElementById("checkoutModal");
 const checkoutOverlay = document.getElementById("checkoutOverlay");
@@ -234,13 +234,13 @@ function goToStep(n) {
   stepPanels.forEach(p => p.classList.toggle("active", Number(p.dataset.stepPanel) === n));
   stepsIndicator.forEach(s => s.classList.toggle("active", Number(s.dataset.step) <= n));
   backStep.classList.toggle("visible", n > 1);
-
+  
   if (n === 2) {
     document.getElementById("step2Title").textContent =
       order.delivery === "domicilio" ? "Datos de entrega" : "Datos de contacto";
     document.getElementById("addressField").style.display =
       order.delivery === "domicilio" ? "flex" : "none";
-
+      
     const zoneField = document.getElementById("zoneField");
     if (order.delivery === "domicilio") {
       zoneField.style.display = "block";
@@ -250,7 +250,31 @@ function goToStep(n) {
       order.zone = null;
     }
   }
+  
+  if (n === 3) renderPaymentTotals();
   if (n === 4) buildSummary();
+}
+
+function renderPaymentTotals() {
+  const box = document.getElementById("paymentTotals");
+  const pending = deliveryIsPending();
+  let html = `<div class="tp-row"><span>Subtotal</span><span>$${cartTotal()}</span></div>`;
+  
+  if (order.delivery === "domicilio") {
+    if (pending) {
+      html += `<div class="tp-row"><span>Envío (${order.zone.name})</span><span>Por confirmar</span></div>`;
+    } else if (order.zone) {
+      html += `<div class="tp-row"><span>Envío (${order.zone.name})</span><span>$${order.zone.cost}</span></div>`;
+    }
+  }
+  
+  html += `<div class="tp-row tp-total"><span>Total</span><span>$${grandTotal()}${pending ? " +" : ""}</span></div>`;
+  
+  if (pending) {
+    html += `<p class="tp-pending">El costo de envío para tu zona se confirma por WhatsApp antes de preparar tu pedido.</p>`;
+  }
+  
+  box.innerHTML = html;
 }
 
 function renderZoneGrid() {
@@ -259,16 +283,22 @@ function renderZoneGrid() {
   ZONES.forEach(z => {
     const btn = document.createElement("button");
     btn.className = "choice-card";
+    if (z.id === "otra") btn.classList.add("zone-other");
     btn.dataset.zone = z.id;
     if (order.zone && order.zone.id === z.id) btn.classList.add("selected");
+    
+    const priceLabel = z.cost === null ? "A confirmar" : `+$${z.cost}`;
     btn.innerHTML = `
       <span class="choice-title">${z.name}</span>
-      <span class="zone-price">+$${z.cost}</span>
+      <span class="zone-price">${priceLabel}</span>
     `;
+    
     btn.addEventListener("click", () => {
       order.zone = z;
       document.querySelectorAll("#zoneGrid .choice-card").forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
+      const note = document.getElementById("zoneNote");
+      note.style.display = z.id === "otra" ? "block" : "none";
     });
     grid.appendChild(btn);
   });
@@ -283,6 +313,7 @@ function openCheckout() {
   document.getElementById("sendWhatsapp").disabled = true;
   goToStep(1);
 }
+
 function closeCheckoutPanel() {
   checkoutModal.classList.remove("open");
   checkoutOverlay.classList.remove("show");
@@ -310,7 +341,7 @@ document.getElementById("toStep3").addEventListener("click", () => {
   order.address = document.getElementById("custAddress").value.trim();
   order.phone = document.getElementById("custPhone").value.trim();
   order.comments = document.getElementById("custComments").value.trim();
-
+  
   if (!order.name || !order.phone) {
     alert("Por favor completa tu nombre y teléfono.");
     return;
@@ -323,6 +354,7 @@ document.getElementById("toStep3").addEventListener("click", () => {
     alert("Por favor elige la zona de tu envío.");
     return;
   }
+  
   goToStep(3);
 });
 
@@ -332,20 +364,29 @@ document.querySelectorAll("[data-payment]").forEach(btn => {
     document.querySelectorAll("[data-payment]").forEach(b => b.classList.remove("selected"));
     btn.classList.add("selected");
     order.payment = btn.dataset.payment;
+    
+    // Mostrar campo de cambio si es efectivo
     document.getElementById("changeField").style.display =
       order.payment === "efectivo" ? "flex" : "none";
+      
+    // Mostrar datos de transferencia si selecciona esa opción
+    document.getElementById("transferDetails").style.display =
+      order.payment === "transferencia" ? "block" : "none";
   });
 });
+
 document.getElementById("toStep4").addEventListener("click", () => {
   if (!order.payment) {
     alert("Elige un método de pago.");
     return;
   }
+  
   order.change = document.getElementById("custChange").value.trim();
   if (order.payment === "efectivo" && !order.change) {
     alert("Por favor indica con cuánto vas a pagar, para llevar tu cambio.");
     return;
   }
+  
   goToStep(4);
 });
 
@@ -355,12 +396,17 @@ document.getElementById("toStep4").addEventListener("click", () => {
 function buildOrderLines() {
   return Object.entries(cart).map(([id, qty]) => {
     const item = findItem(id);
-    return `• ${qty}x [${item.label}] ${item.name} — $${item.price * qty}`;
+    return `${qty}x [${item.label}] ${item.name} - $${item.price * qty}`;
   });
 }
 
 function deliveryCost() {
-  return order.delivery === "domicilio" && order.zone ? order.zone.cost : 0;
+  if (order.delivery !== "domicilio" || !order.zone) return 0;
+  return order.zone.cost === null ? 0 : order.zone.cost;
+}
+
+function deliveryIsPending() {
+  return order.delivery === "domicilio" && order.zone && order.zone.cost === null;
 }
 
 function grandTotal() {
@@ -369,17 +415,21 @@ function grandTotal() {
 
 function buildSummary() {
   const lines = buildOrderLines();
-  const deliveryText = order.delivery === "domicilio" ? "Envío a domicilio 🛵" : "Recoger en el local 🏠";
-  const paymentText = order.payment === "efectivo" ? "Efectivo 💵" : "Transferencia 💳";
-
+  const deliveryText = order.delivery === "domicilio" ? "Envío a domicilio" : "Recoger en el local";
+  const paymentText = order.payment === "efectivo" ? "Efectivo" : "Transferencia";
+  
   let text = `PEDIDO BURGUER ZONE\n${"-".repeat(24)}\n`;
   text += lines.join("\n") + "\n";
   text += `${"-".repeat(24)}\n`;
   text += `Subtotal: $${cartTotal()}\n`;
+  
   if (order.delivery === "domicilio" && order.zone) {
-    text += `Envío (${order.zone.name}): $${order.zone.cost}\n`;
+    text += deliveryIsPending()
+      ? `Envío (${order.zone.name}): por confirmar\n`
+      : `Envío (${order.zone.name}): $${order.zone.cost}\n`;
   }
-  text += `TOTAL: $${grandTotal()}\n\n`;
+  
+  text += `TOTAL: $${grandTotal()}${deliveryIsPending() ? " (+ envío por confirmar)" : ""}\n\n`;
   text += `Entrega: ${deliveryText}\n`;
   if (order.delivery === "domicilio") text += `Zona: ${order.zone ? order.zone.name : "-"}\n`;
   if (order.delivery === "domicilio") text += `Dirección: ${order.address}\n`;
@@ -388,8 +438,15 @@ function buildSummary() {
   text += `Pago: ${paymentText}\n`;
   if (order.change) text += `Cambio: ${order.change}\n`;
   if (order.comments) text += `Comentarios: ${order.comments}\n`;
-
-  document.getElementById("summaryTicket").textContent = text;
+  
+  // Aquí aplicamos el diseño de ticket bonito con el logo
+  document.getElementById("summaryTicket").innerHTML = `
+    <div style="text-align: center; margin-bottom: 15px; border-bottom: 1px dashed var(--line); padding-bottom: 10px;">
+       <img src="logo.png" alt="Burguer Zone" style="max-width: 60px; margin-bottom: 5px; border-radius: 5px;">
+       <h4 style="color: var(--orange); font-family: 'Anton', sans-serif; font-size: 18px; letter-spacing: 1px; margin: 0;">TU RECIBO</h4>
+    </div>
+    <div style="white-space: pre-wrap;">${text}</div>
+  `;
 }
 
 document.getElementById("termsToggle").addEventListener("click", (e) => {
@@ -412,23 +469,30 @@ document.getElementById("sendWhatsapp").addEventListener("click", () => {
   const lines = buildOrderLines();
   const deliveryText = order.delivery === "domicilio" ? "Envío a domicilio" : "Recoger en el local";
   const paymentText = order.payment === "efectivo" ? "Efectivo" : "Transferencia";
-
+  
   let msg = `¡Hola Burguer Zone! 🍔 Quiero hacer este pedido:\n\n`;
   msg += lines.join("\n") + "\n\n";
   msg += `Subtotal: $${cartTotal()}\n`;
+  
   if (order.delivery === "domicilio" && order.zone) {
-    msg += `Envío (${order.zone.name}): $${order.zone.cost}\n`;
+    msg += deliveryIsPending()
+      ? `Envío (${order.zone.name}): por confirmar\n`
+      : `Envío (${order.zone.name}): $${order.zone.cost}\n`;
   }
-  msg += `Total: $${grandTotal()}\n\n`;
+  
+  msg += `Total: $${grandTotal()}${deliveryIsPending() ? " (+ envío por confirmar)" : ""}\n\n`;
   msg += `Entrega: ${deliveryText}\n`;
+  
   if (order.delivery === "domicilio") msg += `Zona: ${order.zone ? order.zone.name : "-"}\n`;
   if (order.delivery === "domicilio") msg += `Dirección: ${order.address}\n`;
+  
   msg += `Nombre: ${order.name}\n`;
   msg += `Teléfono: ${order.phone}\n`;
   msg += `Pago: ${paymentText}\n`;
+  
   if (order.change) msg += `Cambio: ${order.change}\n`;
   if (order.comments) msg += `Comentarios: ${order.comments}\n`;
-
+  
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   window.open(url, "_blank");
 });
