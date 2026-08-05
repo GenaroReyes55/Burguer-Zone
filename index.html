@@ -14,7 +14,8 @@
 <!-- ================= HEADER ================= -->
 <header class="site-header">
   <div class="grill-line"></div>
-  <h1 class="logo">BURGUER<br>ZONE</h1>
+  <img src="logo.png" alt="Burguer Zone" class="logo-img" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='block';">
+  <h1 class="logo" id="logoFallback" style="display:none;">BURGUER<br>ZONE</h1>
   <p class="tagline">hamburguesas &amp; hot dogs de la buena</p>
   <div class="hours-pill">
     <span class="dot"></span> Lun – Dom · 6:00 p.m. a 11:30 p.m.
@@ -38,6 +39,7 @@
 
   <section class="category" id="hotdogs">
     <h2 class="cat-title">Hot Dogs</h2>
+    <p class="cat-note">A elegir salchicha: Chistorra · Chorizo Argentino · Salchicha Para Asar</p>
     <div class="item-list" id="list-hotdogs"></div>
   </section>
 
@@ -76,7 +78,7 @@
   </div>
 
   <div class="ticket-total-row">
-    <span>TOTAL</span>
+    <span>SUBTOTAL</span>
     <span id="ticketTotal">$0</span>
   </div>
 
@@ -118,6 +120,12 @@
   <!-- Paso 2: Dirección (solo si domicilio) -->
   <div class="step-panel" data-step-panel="2">
     <h3 id="step2Title">Datos de entrega</h3>
+
+    <div id="zoneField" style="display:none;">
+      <p class="mini-label">¿A qué zona es el envío?</p>
+      <div class="choice-grid" id="zoneGrid"></div>
+    </div>
+
     <label class="field">
       <span>Nombre de quien recibe</span>
       <input type="text" id="custName" placeholder="Ej. Juan Pérez">
@@ -163,7 +171,23 @@
   <div class="step-panel" data-step-panel="4">
     <h3>Revisa tu pedido</h3>
     <div class="summary-ticket" id="summaryTicket"></div>
-    <button class="btn-whatsapp" id="sendWhatsapp">
+
+    <div class="terms-box">
+      <p class="terms-title">Restricciones que aplican a todos los pedidos:</p>
+      <ul class="terms-list">
+        <li>Los precios y costos de envío pueden variar sin previo aviso.</li>
+        <li>El tiempo de entrega es aproximado y puede cambiar según la demanda.</li>
+        <li>Verifica que tu dirección y teléfono sean correctos; no nos hacemos responsables por datos erróneos.</li>
+        <li>El pedido se confirma hasta recibir respuesta por WhatsApp de nuestro equipo.</li>
+        <li>Cambios o cancelaciones solo se aceptan antes de que el pedido entre a preparación.</li>
+      </ul>
+      <label class="checkbox-field">
+        <input type="checkbox" id="acceptTerms">
+        <span>He leído y acepto las restricciones del pedido</span>
+      </label>
+    </div>
+
+    <button class="btn-whatsapp" id="sendWhatsapp" disabled>
       <span>Enviar pedido por WhatsApp</span>
     </button>
     <p class="fine-print">Al enviar, se abrirá WhatsApp con tu pedido ya escrito. Solo confirma el envío.</p>

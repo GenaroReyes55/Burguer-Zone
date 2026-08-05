@@ -14,12 +14,12 @@ const MENU = {
     { id: "h1", name: "Clásica", label: "Hamburguesa", desc: "100gr de carne, queso americano, jamón, tocino, lechuga, tomate, chile asado, cebolla caramelizada y aderezos.", price: 75 },
     { id: "h2", name: "Hawaiana", label: "Hamburguesa", desc: "100gr de carne, queso americano, jamón, tocino, lechuga, piña, queso chédar, tomate, cebolla, BBQ y aderezos.", price: 85 },
     { id: "h3", name: "Doble Carne", label: "Hamburguesa", desc: "200gr de carne, queso americano, jamón, tocino, lechuga, queso asadero, queso chédar, tomate, cebolla, guacamole y aderezos (al doble).", price: 120 },
-    { id: "h4", name: "Mamalona", label: "Hamburguesa", desc: "100gr de carne, queso americano, jamón, tocino, lechuga, piña, queso chédar, tomate, cebolla, BBQ y aderezos.", price: 120 },
+    { id: "h4", name: "Mamalona", label: "Hamburguesa", desc: "100gr de carne, queso americano, jamón, tocino, lechuga, piña, queso chédar, tomate, cebolla, BBQ y aderezos.", price: 100 },
   ],
   hotdogs: [
     { id: "d1", name: "Sencillo", label: "Hot Dog", desc: "Salchicha de pavo, aderezos, tomate y cebolla.", price: 35 },
     { id: "d2", name: "Especial", label: "Hot Dog", desc: "Salchicha de pavo, tocino, queso asadero, queso chédar, aderezos, tomate y cebolla.", price: 45 },
-    { id: "d3", name: "Mamalón", label: "Hot Dog", desc: "Salchicha de pavo, queso asadero, tocino, cebolla caramelizada, chile asado, piña, aguacate, aderezos. <br>A elegir salchicha: Chistorra · Chorizo Argentino · Salchicha Para Asar.", price: 60 },
+    { id: "d3", name: "Mamalón", label: "Hot Dog", desc: "Salchicha de pavo, queso asadero, tocino, cebolla caramelizada, chile asado, piña, aguacate, aderezos.", price: 65 },
   ],
   bebidas: [
     { id: "b1", name: "Refresco", label: "Bebida", desc: "Lata / botella fría.", price: 30 },
@@ -28,6 +28,16 @@ const MENU = {
 };
 
 const CATEGORY_LABELS = { hamburguesas: "list-hamburguesas", hotdogs: "list-hotdogs", bebidas: "list-bebidas" };
+
+/* =========================================================
+   ZONAS DE ENVÍO — edita nombres y costos aquí
+   ========================================================= */
+const ZONES = [
+  { id: "puerta", name: "A la puerta", cost: 25 },
+  { id: "jardines", name: "Jardines", cost: 15 },
+  { id: "arboledas", name: "Arboledas", cost: 15 },
+  { id: "victoria", name: "Fraccionamiento La Victoria", cost: 50 },
+];
 
 /* =========================================================
    ESTADO DEL CARRITO
@@ -119,6 +129,30 @@ catButtons.forEach(btn => {
 });
 
 /* =========================================================
+   BLOQUEO DE SCROLL DE FONDO (evita saltos raros en móvil)
+   ========================================================= */
+let savedScrollY = 0;
+let scrollLockCount = 0;
+
+function lockScroll() {
+  if (scrollLockCount === 0) {
+    savedScrollY = window.scrollY;
+    document.body.style.top = `-${savedScrollY}px`;
+    document.body.classList.add("no-scroll");
+  }
+  scrollLockCount++;
+}
+
+function unlockScroll() {
+  scrollLockCount = Math.max(0, scrollLockCount - 1);
+  if (scrollLockCount === 0) {
+    document.body.classList.remove("no-scroll");
+    document.body.style.top = "";
+    window.scrollTo(0, savedScrollY);
+  }
+}
+
+/* =========================================================
    TICKET / CARRITO LATERAL
    ========================================================= */
 const ticketFab = document.getElementById("ticketFab");
@@ -168,10 +202,14 @@ function renderTicket() {
 function openTicket() {
   orderTicket.classList.add("open");
   overlay.classList.add("show");
+  lockScroll();
 }
 function closeTicketPanel() {
-  orderTicket.classList.remove("open");
-  overlay.classList.remove("show");
+  if (orderTicket.classList.contains("open")) {
+    orderTicket.classList.remove("open");
+    overlay.classList.remove("show");
+    unlockScroll();
+  }
 }
 
 ticketFab.addEventListener("click", openTicket);
@@ -189,7 +227,7 @@ const stepsIndicator = document.querySelectorAll(".step");
 const stepPanels = document.querySelectorAll(".step-panel");
 
 let currentStep = 1;
-let order = { delivery: null, name: "", address: "", phone: "", comments: "", payment: null, change: "" };
+let order = { delivery: null, zone: null, name: "", address: "", phone: "", comments: "", payment: null, change: "" };
 
 function goToStep(n) {
   currentStep = n;
@@ -202,19 +240,53 @@ function goToStep(n) {
       order.delivery === "domicilio" ? "Datos de entrega" : "Datos de contacto";
     document.getElementById("addressField").style.display =
       order.delivery === "domicilio" ? "flex" : "none";
+
+    const zoneField = document.getElementById("zoneField");
+    if (order.delivery === "domicilio") {
+      zoneField.style.display = "block";
+      renderZoneGrid();
+    } else {
+      zoneField.style.display = "none";
+      order.zone = null;
+    }
   }
   if (n === 4) buildSummary();
+}
+
+function renderZoneGrid() {
+  const grid = document.getElementById("zoneGrid");
+  grid.innerHTML = "";
+  ZONES.forEach(z => {
+    const btn = document.createElement("button");
+    btn.className = "choice-card";
+    btn.dataset.zone = z.id;
+    if (order.zone && order.zone.id === z.id) btn.classList.add("selected");
+    btn.innerHTML = `
+      <span class="choice-title">${z.name}</span>
+      <span class="zone-price">+$${z.cost}</span>
+    `;
+    btn.addEventListener("click", () => {
+      order.zone = z;
+      document.querySelectorAll("#zoneGrid .choice-card").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    });
+    grid.appendChild(btn);
+  });
 }
 
 function openCheckout() {
   closeTicketPanel();
   checkoutModal.classList.add("open");
   checkoutOverlay.classList.add("show");
+  lockScroll();
+  document.getElementById("acceptTerms").checked = false;
+  document.getElementById("sendWhatsapp").disabled = true;
   goToStep(1);
 }
 function closeCheckoutPanel() {
   checkoutModal.classList.remove("open");
   checkoutOverlay.classList.remove("show");
+  unlockScroll();
 }
 
 goCheckout.addEventListener("click", openCheckout);
@@ -247,6 +319,10 @@ document.getElementById("toStep3").addEventListener("click", () => {
     alert("Por favor escribe tu dirección para el envío.");
     return;
   }
+  if (order.delivery === "domicilio" && !order.zone) {
+    alert("Por favor elige la zona de tu envío.");
+    return;
+  }
   goToStep(3);
 });
 
@@ -277,15 +353,29 @@ function buildOrderLines() {
   });
 }
 
+function deliveryCost() {
+  return order.delivery === "domicilio" && order.zone ? order.zone.cost : 0;
+}
+
+function grandTotal() {
+  return cartTotal() + deliveryCost();
+}
+
 function buildSummary() {
   const lines = buildOrderLines();
   const deliveryText = order.delivery === "domicilio" ? "Envío a domicilio 🛵" : "Recoger en el local 🏠";
   const paymentText = order.payment === "efectivo" ? "Efectivo 💵" : "Transferencia 💳";
 
-  let text = `PEDIDO MAMALONA\n${"-".repeat(24)}\n`;
+  let text = `PEDIDO BURGUER ZONE\n${"-".repeat(24)}\n`;
   text += lines.join("\n") + "\n";
-  text += `${"-".repeat(24)}\nTOTAL: $${cartTotal()}\n\n`;
+  text += `${"-".repeat(24)}\n`;
+  text += `Subtotal: $${cartTotal()}\n`;
+  if (order.delivery === "domicilio" && order.zone) {
+    text += `Envío (${order.zone.name}): $${order.zone.cost}\n`;
+  }
+  text += `TOTAL: $${grandTotal()}\n\n`;
   text += `Entrega: ${deliveryText}\n`;
+  if (order.delivery === "domicilio") text += `Zona: ${order.zone ? order.zone.name : "-"}\n`;
   if (order.delivery === "domicilio") text += `Dirección: ${order.address}\n`;
   text += `Nombre: ${order.name}\n`;
   text += `Teléfono: ${order.phone}\n`;
@@ -296,15 +386,24 @@ function buildSummary() {
   document.getElementById("summaryTicket").textContent = text;
 }
 
+document.getElementById("acceptTerms").addEventListener("change", (e) => {
+  document.getElementById("sendWhatsapp").disabled = !e.target.checked;
+});
+
 document.getElementById("sendWhatsapp").addEventListener("click", () => {
   const lines = buildOrderLines();
   const deliveryText = order.delivery === "domicilio" ? "Envío a domicilio" : "Recoger en el local";
   const paymentText = order.payment === "efectivo" ? "Efectivo" : "Transferencia";
 
-  let msg = `¡Hola Mamalona! 👋 Quiero hacer este pedido:\n\n`;
+  let msg = `¡Hola Burguer Zone! 👋 Quiero hacer este pedido:\n\n`;
   msg += lines.join("\n") + "\n\n";
-  msg += `Total: $${cartTotal()}\n\n`;
+  msg += `Subtotal: $${cartTotal()}\n`;
+  if (order.delivery === "domicilio" && order.zone) {
+    msg += `Envío (${order.zone.name}): $${order.zone.cost}\n`;
+  }
+  msg += `Total: $${grandTotal()}\n\n`;
   msg += `Entrega: ${deliveryText}\n`;
+  if (order.delivery === "domicilio") msg += `Zona: ${order.zone ? order.zone.name : "-"}\n`;
   if (order.delivery === "domicilio") msg += `Dirección: ${order.address}\n`;
   msg += `Nombre: ${order.name}\n`;
   msg += `Teléfono: ${order.phone}\n`;
