@@ -11,12 +11,12 @@ const MENU = {
     { id: "h1", name: "Clásica", label: "Hamburguesa", desc: "100gr de carne, queso americano, jamón, tocino, lechuga, tomate, chile asado, cebolla caramelizada y aderezos.", price: 75 },
     { id: "h2", name: "Hawaiana", label: "Hamburguesa", desc: "100gr de carne, queso americano, jamón, tocino, lechuga, piña, queso chédar, tomate, cebolla, BBQ y aderezos.", price: 85 },
     { id: "h3", name: "Doble Carne", label: "Hamburguesa", desc: "200gr de carne, queso americano, jamón, tocino, lechuga, queso asadero, queso chédar, tomate, cebolla, guacamole y aderezos (al doble).", price: 120 },
-    { id: "h4", name: "Mamalona", label: "Hamburguesa", desc: "100gr de carne, queso americano, jamón, tocino, lechuga, piña, queso chédar, tomate, cebolla, BBQ y aderezos.", price: 100 },
+    { id: "h4", name: "Mamalona", label: "Hamburguesa", desc: "100gr de carne, queso americano, jamón, tocino, lechuga, piña, queso chédar, tomate, cebolla, BBQ y aderezos. <br>A elegir salchicha: Chistorra - Chorizo Argentino - Salchicha Para Asar.", price: 100 },
   ],
   hotdogs: [
     { id: "d1", name: "Sencillo", label: "Hot Dog", desc: "Salchicha de pavo, aderezos, tomate y cebolla.", price: 35 },
     { id: "d2", name: "Especial", label: "Hot Dog", desc: "Salchicha de pavo, tocino, queso asadero, queso chédar, aderezos, tomate y cebolla.", price: 45 },
-    { id: "d3", name: "Mamalón", label: "Hot Dog", desc: "Salchicha de pavo, queso asadero, tocino, cebolla caramelizada, chile asado, piña, aguacate, aderezos.", price: 65 },
+    { id: "d3", name: "Mamalón", label: "Hot Dog", desc: "Salchicha de pavo, queso asadero, tocino, cebolla caramelizada, chile asado, piña, aguacate, aderezos. <br>A elegir salchicha: Chistorra - Chorizo Argentino - Salchicha Para Asar.", price: 65 },
   ],
   bebidas: [
     { id: "b1", name: "Refresco", label: "Bebida", desc: "Lata / botella fría.", price: 30 },
